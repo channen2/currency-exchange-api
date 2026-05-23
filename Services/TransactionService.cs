@@ -1,34 +1,44 @@
-using System.Collections.Concurrent;
-
-
-
-
-
-
+using ExchangeRateService.Data;
 using ExchangeRateService.Models;
+using Microsoft.EntityFrameworkCore;
 
-public class TransactionService
+namespace ExchangeRateService.Services
 {
-    private readonly ConcurrentDictionary<Guid, PurchaseTransaction> _store = new();
-
-    public PurchaseTransaction Create(decimal amount, string currency)
+    public class TransactionService
     {
-        var tx = new PurchaseTransaction
+        private readonly AppDbContext _db;
+
+        public TransactionService(AppDbContext db)
         {
-            Id = Guid.NewGuid(),
-            Amount = amount,
-            Currency = currency,
-            CreatedAt = DateTime.UtcNow
-        };
+            _db = db;
+        }
 
-        _store[tx.Id] = tx;
+        public async Task<PurchaseTransaction> Create(
+            decimal amount,
+            DateTime transactionDate,
+            string description
+        )
+        {
+            PurchaseTransaction transaction = new PurchaseTransaction
+            {
+                Id = Guid.NewGuid(),
+                Description = description,
+                PurchaseAmountUsd = amount,
+                TransactionDate = transactionDate,
+                CreatedAt = DateTime.UtcNow,
+            };
 
-        return tx;
-    }
+            _db.PurchaseTransactions.Add(transaction);
+            await _db.SaveChangesAsync();
 
-    public PurchaseTransaction? Get(Guid id)
-    {
-        _store.TryGetValue(id, out var tx);
-        return tx;
+            return transaction;
+        }
+
+        public async Task<List<PurchaseTransaction>> GetAllAsync()
+        {
+            return await _db
+                .PurchaseTransactions.OrderByDescending(x => x.TransactionDate)
+                .ToListAsync();
+        }
     }
 }
