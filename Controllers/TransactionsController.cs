@@ -65,13 +65,9 @@ namespace ExchangeRateService.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateAsync(CreateTransactionRequest request)
         {
-            if (request.TransactionDate is null)
-            {
-                return BadRequest("TransactionDate is required");
-            }
             PurchaseTransaction transaction = await _transactionService.Create(
                 request.PurchaseAmountUsd,
-                request.TransactionDate.Value,
+                request.TransactionDate!.Value,
                 request.Description
             );
 
