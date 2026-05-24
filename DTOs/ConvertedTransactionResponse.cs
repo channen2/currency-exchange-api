@@ -12,7 +12,7 @@ namespace ExchangeRateService.DTOs
 
         public decimal ExchangeRate { get; set; }
 
-        public string TargetCurrency { get; set; } = string.Empty;
+        public string CurrencyCode { get; set; } = string.Empty;
 
         public decimal ConvertedAmount { get; set; }
     }

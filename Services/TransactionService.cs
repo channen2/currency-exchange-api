@@ -40,5 +40,10 @@ namespace ExchangeRateService.Services
                 .PurchaseTransactions.OrderByDescending(x => x.TransactionDate)
                 .ToListAsync();
         }
+
+        public async Task<PurchaseTransaction?> GetByIdAsync(Guid id)
+        {
+            return await _db.PurchaseTransactions.FindAsync(id);
+        }
     }
 }

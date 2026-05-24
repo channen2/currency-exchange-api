@@ -1,5 +1,6 @@
 using ExchangeRateService.Data;
 using ExchangeRateService.Services;
+using ExchangeRateService.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -10,10 +11,14 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped<TransactionService>();
+builder.Services.AddScoped<ITreasuryExchangeRateService, TreasuryExchangeRateService>();
+builder.Services.AddScoped<ICurrencyConversionService, CurrencyConversionService>();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
+
+builder.Services.AddHttpClient();
 
 WebApplication app = builder.Build();
 

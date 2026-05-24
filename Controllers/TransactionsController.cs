@@ -1,6 +1,8 @@
+using ExchangeRateService.Common;
 using ExchangeRateService.DTOs;
 using ExchangeRateService.Models;
 using ExchangeRateService.Services;
+using ExchangeRateService.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ExchangeRateService.Controllers
@@ -10,10 +12,15 @@ namespace ExchangeRateService.Controllers
     public class TransactionsController : ControllerBase
     {
         private readonly TransactionService _transactionService;
+        private readonly ICurrencyConversionService _conversionService;
 
-        public TransactionsController(TransactionService transactionService)
+        public TransactionsController(
+            TransactionService transactionService,
+            ICurrencyConversionService conversionService
+        )
         {
             _transactionService = transactionService;
+            _conversionService = conversionService;
         }
 
         [HttpGet]
@@ -30,6 +37,27 @@ namespace ExchangeRateService.Controllers
                     TransactionDate = x.TransactionDate,
                 }
             );
+
+            return Ok(response);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(Guid id)
+        {
+            PurchaseTransaction? transaction = await _transactionService.GetByIdAsync(id);
+
+            if (transaction is null)
+            {
+                return NotFound();
+            }
+
+            TransactionResponse response = new()
+            {
+                Id = transaction.Id,
+                Description = transaction.Description,
+                PurchaseAmountUsd = transaction.PurchaseAmountUsd,
+                TransactionDate = transaction.TransactionDate,
+            };
 
             return Ok(response);
         }
@@ -56,6 +84,30 @@ namespace ExchangeRateService.Controllers
             };
 
             return Ok(response);
+        }
+
+        [HttpGet("{id}/convert")]
+        public async Task<IActionResult> Convert(Guid id, [FromQuery] string currency)
+        {
+            Result<ConvertedTransactionResponse> result = await _conversionService.ConvertAsync(
+                id,
+                currency
+            );
+
+            if (!result.IsSuccess)
+            {
+                return result.Error switch
+                {
+                    "Transaction not found" => NotFound(result.Error),
+                    "Unsupported currency" => BadRequest(result.Error),
+                    "No exchange rate available within 6 months" => UnprocessableEntity(
+                        result.Error
+                    ),
+                    _ => BadRequest(result.Error),
+                };
+            }
+
+            return Ok(result.Value);
         }
     }
 }
