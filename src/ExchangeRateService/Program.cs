@@ -1,3 +1,5 @@
+using ExchangeRateService.Background;
+using ExchangeRateService.Background.Interfaces;
 using ExchangeRateService.Configuration;
 using ExchangeRateService.Data;
 using ExchangeRateService.DTOs.Responses;
@@ -38,6 +40,13 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<ITransactionService, TransactionService>();
 builder.Services.AddScoped<ITreasuryExchangeRateService, TreasuryExchangeRateService>();
 builder.Services.AddScoped<ICurrencyConversionService, CurrencyConversionService>();
+builder.Services.AddScoped<IExchangeRateProvider, ExchangeRateProvider>();
+builder.Services.AddScoped<IExchangeRateIngestionService, ExchangeRateIngestionService>();
+
+builder.Services.AddSingleton<IExchangeRateIngestionBuffer, ExchangeRateIngestionBuffer>();
+builder.Services.AddHostedService<ExchangeRateIngestionWorker>();
+builder.Services.AddHostedService<ExchangeRateIngestionWorker>();
+builder.Services.AddHostedService<ExchangeRateIngestionWorker>();
 
 builder.Services.Configure<TreasuryCurrencyOptions>(
     builder.Configuration.GetSection("TreasuryCurrencyOptions")

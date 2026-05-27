@@ -1,23 +1,27 @@
 using ExchangeRateService.Common;
 using ExchangeRateService.Common.Errors;
+using ExchangeRateService.Configuration;
 using ExchangeRateService.DTOs.Responses;
-using ExchangeRateService.Models;
 using ExchangeRateService.Services.Interfaces;
+using Microsoft.Extensions.Options;
 
 namespace ExchangeRateService.Services
 {
     public class CurrencyConversionService : ICurrencyConversionService
     {
         private readonly ITransactionService _transactionService;
-        private readonly ITreasuryExchangeRateService _exchangeRateService;
+        private readonly IExchangeRateProvider _exchangeRateProvider;
+        private readonly Dictionary<string, string> _currencyMappings;
 
         public CurrencyConversionService(
             ITransactionService transactionService,
-            ITreasuryExchangeRateService exchangeRateService
+            IExchangeRateProvider exchangeRateProvider,
+            IOptions<TreasuryCurrencyOptions> currencyMappings
         )
         {
             _transactionService = transactionService;
-            _exchangeRateService = exchangeRateService;
+            _exchangeRateProvider = exchangeRateProvider;
+            _currencyMappings = currencyMappings.Value.CurrencyMappings;
         }
 
         public async Task<Result<ConvertedTransactionResponse>> ConvertAsync(
@@ -25,9 +29,7 @@ namespace ExchangeRateService.Services
             string targetCurrency
         )
         {
-            PurchaseTransaction? transaction = await _transactionService.GetByIdAsync(
-                transactionId
-            );
+            var transaction = await _transactionService.GetByIdAsync(transactionId);
 
             if (transaction is null)
             {
@@ -37,8 +39,21 @@ namespace ExchangeRateService.Services
                 );
             }
 
-            Result<decimal> rateResult = await _exchangeRateService.GetExchangeRateAsync(
-                targetCurrency,
+            if (
+                !_currencyMappings.TryGetValue(
+                    targetCurrency.ToUpperInvariant(),
+                    out var treasuryCurrency
+                )
+            )
+            {
+                return Result<ConvertedTransactionResponse>.Failure(
+                    ErrorRegistry.UnsupportedCurrency,
+                    new Dictionary<string, object> { ["currency"] = targetCurrency }
+                );
+            }
+
+            var rateResult = await _exchangeRateProvider.GetRateAsync(
+                treasuryCurrency,
                 transaction.TransactionDate
             );
 
@@ -50,9 +65,9 @@ namespace ExchangeRateService.Services
                 );
             }
 
-            decimal rate = rateResult.Value;
+            var rate = rateResult.Value;
 
-            decimal convertedAmount = Math.Round(
+            var convertedAmount = Math.Round(
                 transaction.PurchaseAmountUsd * rate,
                 2,
                 MidpointRounding.AwayFromZero
@@ -65,7 +80,7 @@ namespace ExchangeRateService.Services
                     Description = transaction.Description,
                     TransactionDate = transaction.TransactionDate,
                     OriginalPurchaseAmountUsd = transaction.PurchaseAmountUsd,
-                    CurrencyCode = targetCurrency,
+                    CurrencyCode = targetCurrency.ToUpperInvariant(),
                     ExchangeRate = rate,
                     ConvertedAmount = convertedAmount,
                 }

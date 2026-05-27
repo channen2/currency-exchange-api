@@ -1,9 +1,14 @@
 using ExchangeRateService.Common;
+using ExchangeRateService.DTOs.Treasury;
 
 namespace ExchangeRateService.Services.Interfaces
 {
     public interface ITreasuryExchangeRateService
     {
-        Task<Result<decimal>> GetExchangeRateAsync(string targetCurrency, DateTime transactionDate);
+        Task<Result<TreasuryExchangeRateApiResponse>> GetExchangeRatesAsync(
+            DateTime fromDate,
+            DateTime toDate,
+            string? treasuryCurrency
+        );
     }
 }

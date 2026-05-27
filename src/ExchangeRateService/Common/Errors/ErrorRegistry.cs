@@ -20,6 +20,12 @@ namespace ExchangeRateService.Common.Errors
             "No exchange rate found within 6 months of transaction date"
         );
 
+        public static readonly ErrorDefinition ExternalServiceError = new(
+            "EXTERNAL_SERVICE_ERROR",
+            502,
+            "Failed to retrieve data from external exchange rate provider"
+        );
+
         public static readonly ErrorDefinition ExchangeRateParseError = new(
             "EXCHANGE_RATE_PARSE_ERROR",
             502,
