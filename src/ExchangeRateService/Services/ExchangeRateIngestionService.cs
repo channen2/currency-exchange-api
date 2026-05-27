@@ -37,7 +37,7 @@ namespace ExchangeRateService.Services
                     null
                 );
 
-                if (!apiResult.IsSuccess)
+                if (!apiResult.IsSuccess || apiResult.Value?.Data == null)
                 {
                     run.Success = false;
                     run.ErrorMessage = apiResult.Error?.Message;
@@ -47,39 +47,47 @@ namespace ExchangeRateService.Services
                     return;
                 }
 
-                var records = apiResult.Value!.Data;
+                var records = apiResult.Value.Data;
+
+                var existing = await _db
+                    .ExchangeRates.Where(x =>
+                        x.EffectiveDate >= fromDate && x.EffectiveDate <= toDate
+                    )
+                    .Select(x => new
+                    {
+                        x.CurrencyCode,
+                        x.EffectiveDate,
+                        x.RecordDate,
+                    })
+                    .ToListAsync();
+
+                var existingSet = existing
+                    .Select(x => (x.CurrencyCode, x.EffectiveDate, x.RecordDate))
+                    .ToHashSet();
+
+                var now = DateTime.UtcNow;
+
+                var newEntities = new List<ExchangeRate>();
 
                 foreach (var record in records)
                 {
                     if (!DateTime.TryParse(record.RecordDate, out var recordDate))
-                    {
                         continue;
-                    }
 
                     if (!DateTime.TryParse(record.EffectiveDate, out var effectiveDate))
-                    {
                         continue;
-                    }
 
                     if (!decimal.TryParse(record.ExchangeRate, out var rate))
-                    {
                         continue;
-                    }
 
                     var currency = record.CountryCurrencyDescription.ToUpperInvariant();
 
-                    var exists = await _db.ExchangeRates.AnyAsync(x =>
-                        x.CurrencyCode == currency
-                        && x.EffectiveDate == effectiveDate
-                        && x.RecordDate == recordDate
-                    );
+                    var key = (currency, effectiveDate, recordDate);
 
-                    if (exists)
-                    {
+                    if (existingSet.Contains(key))
                         continue;
-                    }
 
-                    _db.ExchangeRates.Add(
+                    newEntities.Add(
                         new ExchangeRate
                         {
                             Id = Guid.NewGuid(),
@@ -87,15 +95,17 @@ namespace ExchangeRateService.Services
                             Rate = rate,
                             EffectiveDate = effectiveDate,
                             RecordDate = recordDate,
-                            RetrievedAtUtc = DateTime.UtcNow,
+                            RetrievedAtUtc = now,
                         }
                     );
                 }
 
-                await _db.SaveChangesAsync();
+                if (newEntities.Count > 0)
+                {
+                    _db.ExchangeRates.AddRange(newEntities);
+                }
 
                 run.Success = true;
-                run.ErrorMessage = null;
 
                 _db.IngestionRuns.Add(run);
                 await _db.SaveChangesAsync();
