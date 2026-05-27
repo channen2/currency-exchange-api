@@ -12,5 +12,8 @@ namespace ExchangeRateService.DTOs.Treasury
 
         [JsonPropertyName("record_date")]
         public string RecordDate { get; set; } = string.Empty;
+
+        [JsonPropertyName("effective_date")]
+        public string EffectiveDate { get; set; } = string.Empty;
     }
 }

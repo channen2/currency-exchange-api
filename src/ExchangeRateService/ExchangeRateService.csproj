@@ -11,6 +11,7 @@
 
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <UserSecretsId>c97a0857-a21d-4a8a-8b90-1d20a13e3279</UserSecretsId>
+    <NoWarn>CA1707;IDE0007;IDE0008;IDE0058;IDE0008;IDE0058</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

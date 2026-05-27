@@ -4,6 +4,7 @@ using ExchangeRateService.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ExchangeRateService.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260526170031_AddExchangeRates")]
+    partial class AddExchangeRates
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -39,47 +42,19 @@ namespace ExchangeRateService.Migrations
                         .HasPrecision(18, 6)
                         .HasColumnType("decimal(18,6)");
 
-                    b.Property<DateTime>("RecordDate")
-                        .HasColumnType("datetime2");
-
                     b.Property<DateTime>("RetrievedAtUtc")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("TreasuryCurrencyName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("CurrencyCode", "EffectiveDate", "RecordDate")
+                    b.HasIndex("CurrencyCode", "EffectiveDate")
                         .IsUnique();
 
                     b.ToTable("ExchangeRates");
-                });
-
-            modelBuilder.Entity("ExchangeRateService.Models.IngestionRun", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("ErrorMessage")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("FinishedAtUtc")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("FromDateUtc")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("StartedAtUtc")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("Success")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime>("ToDateUtc")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("IngestionRuns");
                 });
 
             modelBuilder.Entity("ExchangeRateService.Models.PurchaseTransaction", b =>
