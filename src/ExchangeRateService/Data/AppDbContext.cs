@@ -27,7 +27,7 @@ namespace ExchangeRateService.Data
                 .Entity<ExchangeRate>()
                 .HasIndex(x => new
                 {
-                    x.CurrencyCode,
+                    x.TreasuryCurrency,
                     x.EffectiveDate,
                     x.RecordDate,
                 })

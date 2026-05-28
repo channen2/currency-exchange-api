@@ -1,5 +1,6 @@
 using ExchangeRateService.Common;
 using ExchangeRateService.Data;
+using ExchangeRateService.Logging;
 using ExchangeRateService.Models;
 using ExchangeRateService.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -10,18 +11,28 @@ namespace ExchangeRateService.Services
     public class ExchangeRateIngestionService : IExchangeRateIngestionService
     {
         private readonly AppDbContext _db;
+
         private readonly ITreasuryExchangeRateService _treasuryService;
+
         private readonly IMemoryCache _cache;
+
+        private readonly ITreasuryCurrencyMapper _treasuryCurrencyMapper;
+
+        private readonly ILogger<ExchangeRateIngestionService> _logger;
 
         public ExchangeRateIngestionService(
             AppDbContext db,
             ITreasuryExchangeRateService treasuryService,
-            IMemoryCache cache
+            IMemoryCache cache,
+            ITreasuryCurrencyMapper treasuryCurrencyMapper,
+            ILogger<ExchangeRateIngestionService> logger
         )
         {
             _db = db;
             _treasuryService = treasuryService;
             _cache = cache;
+            _treasuryCurrencyMapper = treasuryCurrencyMapper;
+            _logger = logger;
         }
 
         public async Task IngestRatesAsync(DateTime fromDate, DateTime toDate)
@@ -33,6 +44,8 @@ namespace ExchangeRateService.Services
                 ToDateUtc = toDate,
                 StartedAtUtc = DateTime.UtcNow,
             };
+
+            LogMessages.IngestionStarted(_logger, fromDate, toDate);
 
             try
             {
@@ -60,14 +73,14 @@ namespace ExchangeRateService.Services
                     )
                     .Select(x => new
                     {
-                        x.CurrencyCode,
+                        x.TreasuryCurrency,
                         x.EffectiveDate,
                         x.RecordDate,
                     })
                     .ToListAsync();
 
                 var existingSet = existing
-                    .Select(x => (x.CurrencyCode, x.EffectiveDate, x.RecordDate))
+                    .Select(x => (x.TreasuryCurrency, x.EffectiveDate, x.RecordDate))
                     .ToHashSet();
 
                 var now = DateTime.UtcNow;
@@ -76,18 +89,29 @@ namespace ExchangeRateService.Services
 
                 foreach (var record in records)
                 {
+                    var treasuryCurrency = record.CountryCurrencyDescription;
+
                     if (
                         !DateTime.TryParse(record.RecordDate, out var recordDate)
                         || !DateTime.TryParse(record.EffectiveDate, out var effectiveDate)
                         || !decimal.TryParse(record.ExchangeRate, out var rate)
+                        || !_treasuryCurrencyMapper.TryToInternal(
+                            treasuryCurrency,
+                            out var currencyCode
+                        )
                     )
                     {
+                        LogMessages.IngestionRecordSkipped(
+                            _logger,
+                            record.CountryCurrencyDescription,
+                            record.EffectiveDate ?? "null",
+                            record.RecordDate ?? "null",
+                            record.ExchangeRate ?? "null"
+                        );
                         continue;
                     }
 
-                    var currency = record.CountryCurrencyDescription.ToUpperInvariant();
-
-                    var key = (currency, effectiveDate, recordDate);
+                    var key = (treasuryCurrency, effectiveDate, recordDate);
 
                     if (existingSet.Contains(key))
                     {
@@ -98,7 +122,8 @@ namespace ExchangeRateService.Services
                         new ExchangeRate
                         {
                             Id = Guid.NewGuid(),
-                            CurrencyCode = currency,
+                            TreasuryCurrency = treasuryCurrency,
+                            CurrencyCode = currencyCode,
                             Rate = rate,
                             EffectiveDate = effectiveDate,
                             RecordDate = recordDate,
@@ -117,12 +142,14 @@ namespace ExchangeRateService.Services
                 _db.IngestionRuns.Add(run);
                 await _db.SaveChangesAsync();
 
+                LogMessages.IngestionCompleted(_logger, fromDate, toDate, newEntities.Count);
+
                 if (newEntities.Count > 0)
                 {
                     foreach (var entity in newEntities)
                     {
                         var cacheKey = ExchangeRateCacheKey.FromRecordDate(
-                            entity.CurrencyCode,
+                            entity.TreasuryCurrency,
                             entity.RecordDate
                         );
                         _cache.Remove(cacheKey);
@@ -131,6 +158,7 @@ namespace ExchangeRateService.Services
             }
             catch (Exception ex)
             {
+                LogMessages.IngestionFailed(_logger, fromDate, toDate, ex);
                 run.Success = false;
                 run.ErrorMessage = ex.Message;
 

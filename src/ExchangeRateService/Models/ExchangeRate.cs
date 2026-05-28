@@ -4,6 +4,8 @@ namespace ExchangeRateService.Models
     {
         public Guid Id { get; set; }
 
+        public string TreasuryCurrency { get; set; } = string.Empty;
+
         public string CurrencyCode { get; set; } = string.Empty;
 
         public decimal Rate { get; set; }
