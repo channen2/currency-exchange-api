@@ -1,4 +1,5 @@
 using ExchangeRateService.Background.Interfaces;
+using ExchangeRateService.Logging;
 using ExchangeRateService.Services.Interfaces;
 
 namespace ExchangeRateService.Background
@@ -7,18 +8,23 @@ namespace ExchangeRateService.Background
     {
         private readonly IExchangeRateIngestionBuffer _buffer;
         private readonly IServiceScopeFactory _scopeFactory;
+        private readonly ILogger<ExchangeRateIngestionWorker> _logger;
 
         public ExchangeRateIngestionWorker(
             IExchangeRateIngestionBuffer buffer,
-            IServiceScopeFactory scopeFactory
+            IServiceScopeFactory scopeFactory,
+            ILogger<ExchangeRateIngestionWorker> logger
         )
         {
             _buffer = buffer;
             _scopeFactory = scopeFactory;
+            _logger = logger;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            LogMessages.IngestionWorkerStarted(_logger, DateTime.UtcNow);
+
             while (!stoppingToken.IsCancellationRequested)
             {
                 var (fromDate, toDate) = await _buffer.DequeueAsync(stoppingToken);

@@ -1,3 +1,4 @@
+using ExchangeRateService.Logging;
 using ExchangeRateService.Services.Interfaces;
 
 namespace ExchangeRateService.Background
@@ -6,9 +7,15 @@ namespace ExchangeRateService.Background
     {
         private readonly IServiceScopeFactory _scopeFactory;
 
-        public ExchangeRateRefreshHostedService(IServiceScopeFactory scopeFactory)
+        private readonly ILogger<ExchangeRateRefreshHostedService> _logger;
+
+        public ExchangeRateRefreshHostedService(
+            IServiceScopeFactory scopeFactory,
+            ILogger<ExchangeRateRefreshHostedService> logger
+        )
         {
             _scopeFactory = scopeFactory;
+            _logger = logger;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -23,6 +30,8 @@ namespace ExchangeRateService.Background
             while (!stoppingToken.IsCancellationRequested)
             {
                 await orchestrator.RefreshRecentAsync();
+
+                LogMessages.RefreshJobExecuted(_logger, DateTime.UtcNow);
 
                 await Task.Delay(TimeSpan.FromDays(1), stoppingToken);
             }
