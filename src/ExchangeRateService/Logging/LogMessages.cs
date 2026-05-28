@@ -160,5 +160,16 @@ namespace ExchangeRateService.Logging
             Message = "Ingestion worker started at {UtcNow:O}"
         )]
         public static partial void IngestionWorkerStarted(ILogger logger, DateTime utcNow);
+
+        [LoggerMessage(
+            EventId = 1403,
+            Level = LogLevel.Error,
+            Message = "Ingestion worker failed at {UtcNow:O}"
+        )]
+        public static partial void IngestionWorkerFailed(
+            ILogger logger,
+            DateTime utcNow,
+            Exception ex
+        );
     }
 }

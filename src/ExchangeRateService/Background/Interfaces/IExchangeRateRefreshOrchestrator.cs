@@ -1,4 +1,4 @@
-namespace ExchangeRateService.Services.Interfaces
+namespace ExchangeRateService.Background.Interfaces
 {
     public interface IExchangeRateRefreshOrchestrator
     {

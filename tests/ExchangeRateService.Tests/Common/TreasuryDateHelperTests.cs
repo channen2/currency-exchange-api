@@ -1,4 +1,4 @@
-using ExchangeRateService.Common;
+using ExchangeRateService.Integrations.Treasury;
 
 namespace ExchangeRateService.Tests.Common
 {

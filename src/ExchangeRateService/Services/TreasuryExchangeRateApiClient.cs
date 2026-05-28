@@ -1,7 +1,7 @@
 using System.Text.Json;
 using ExchangeRateService.Common;
 using ExchangeRateService.Common.Errors;
-using ExchangeRateService.DTOs.Treasury;
+using ExchangeRateService.Integrations.Treasury.DTOs;
 using ExchangeRateService.Services.Interfaces;
 
 namespace ExchangeRateService.Services
@@ -41,8 +41,8 @@ namespace ExchangeRateService.Services
                     new Dictionary<string, object>
                     {
                         ["statusCode"] = response.StatusCode.ToString(),
-                        ["fromDate"] = fromDate.ToString("yyyy-MM-dd"),
-                        ["toDate"] = toDate.ToString("yyyy-MM-dd"),
+                        ["fromDate"] = DateFormats.IsoDate(fromDate),
+                        ["toDate"] = DateFormats.IsoDate(toDate),
                     }
                 );
             }
@@ -60,8 +60,8 @@ namespace ExchangeRateService.Services
                     ErrorRegistry.ExchangeRateNotFound,
                     new Dictionary<string, object>
                     {
-                        ["fromDate"] = fromDate.ToString("yyyy-MM-dd"),
-                        ["toDate"] = toDate.ToString("yyyy-MM-dd"),
+                        ["fromDate"] = DateFormats.IsoDate(fromDate),
+                        ["toDate"] = DateFormats.IsoDate(toDate),
                     }
                 );
             }

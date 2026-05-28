@@ -2,7 +2,8 @@ using ExchangeRateService.Background.Interfaces;
 using ExchangeRateService.Common;
 using ExchangeRateService.Common.Errors;
 using ExchangeRateService.Data;
-using ExchangeRateService.DTOs.Treasury;
+using ExchangeRateService.Integrations.Treasury;
+using ExchangeRateService.Integrations.Treasury.DTOs;
 using ExchangeRateService.Logging;
 using ExchangeRateService.Models;
 using ExchangeRateService.Services.Interfaces;
@@ -93,7 +94,7 @@ namespace ExchangeRateService.Services
                     new Dictionary<string, object>
                     {
                         ["currency"] = treasuryCurrency,
-                        ["transactionDate"] = transactionDate.ToString("yyyy-MM-dd"),
+                        ["transactionDate"] = DateFormats.IsoDate(transactionDate),
                     }
                 );
             }
@@ -117,7 +118,7 @@ namespace ExchangeRateService.Services
 
             TryCache(
                 rate,
-                DateTime.Parse(exchangeRateFromApi.RecordDate),
+                DateFormats.ParseIsoDate(exchangeRateFromApi.RecordDate),
                 expectedRecordDate,
                 cacheKey
             );
@@ -177,8 +178,8 @@ namespace ExchangeRateService.Services
                 .Select(x => new
                 {
                     Record = x,
-                    EffectiveDate = DateTime.Parse(x.EffectiveDate),
-                    RecordDate = DateTime.Parse(x.RecordDate),
+                    EffectiveDate = DateFormats.ParseIsoDate(x.EffectiveDate),
+                    RecordDate = DateFormats.ParseIsoDate(x.RecordDate),
                 })
                 .Where(x => x.EffectiveDate <= transactionDate)
                 .Where(x => x.EffectiveDate >= cutoffDate)

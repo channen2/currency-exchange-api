@@ -1,4 +1,4 @@
-namespace ExchangeRateService.Tests.Common.Http
+namespace ExchangeRateService.Tests.Mocks
 {
     public class FakeHttpMessageHandler(Func<HttpRequestMessage, HttpResponseMessage> handler)
         : HttpMessageHandler

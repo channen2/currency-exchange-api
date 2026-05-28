@@ -1,10 +1,9 @@
 using ExchangeRateService.Background.Interfaces;
-using ExchangeRateService.Common;
 using ExchangeRateService.Data;
-using ExchangeRateService.Services.Interfaces;
+using ExchangeRateService.Integrations.Treasury;
 using Microsoft.EntityFrameworkCore;
 
-namespace ExchangeRateService.Services
+namespace ExchangeRateService.Background
 {
     public class ExchangeRateRefreshOrchestrator(
         AppDbContext db,

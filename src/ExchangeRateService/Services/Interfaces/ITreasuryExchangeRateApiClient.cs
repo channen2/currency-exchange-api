@@ -1,5 +1,5 @@
 using ExchangeRateService.Common;
-using ExchangeRateService.DTOs.Treasury;
+using ExchangeRateService.Integrations.Treasury.DTOs;
 
 namespace ExchangeRateService.Services.Interfaces
 {

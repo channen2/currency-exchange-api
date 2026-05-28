@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace ExchangeRateService.DTOs.Treasury
+namespace ExchangeRateService.Integrations.Treasury.DTOs
 {
     public class TreasuryExchangeRateRecord
     {

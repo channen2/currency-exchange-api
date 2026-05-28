@@ -2,7 +2,7 @@ using ExchangeRateService.Background.Interfaces;
 using ExchangeRateService.Common;
 using ExchangeRateService.Common.Errors;
 using ExchangeRateService.Data;
-using ExchangeRateService.DTOs.Treasury;
+using ExchangeRateService.Integrations.Treasury.DTOs;
 using ExchangeRateService.Models;
 using ExchangeRateService.Services;
 using ExchangeRateService.Services.Interfaces;
@@ -46,7 +46,7 @@ namespace ExchangeRateService.Tests.Services
         {
             // Arrange
             _cache
-                .TryGetValue(Arg.Any<string>(), out Arg.Any<object>())
+                .TryGetValue(Arg.Any<string>(), out _)
                 .Returns(x =>
                 {
                     x[1] = 1.5m;
@@ -73,7 +73,7 @@ namespace ExchangeRateService.Tests.Services
 
             var transactionDate = new DateTime(2026, 1, 10);
 
-            _cache.TryGetValue(TreasuryCadCurrency, out Arg.Any<object>()).Returns(false);
+            _cache.TryGetValue(TreasuryCadCurrency, out _).Returns(false);
 
             _db.ExchangeRates.Add(
                 new ExchangeRate
@@ -102,7 +102,7 @@ namespace ExchangeRateService.Tests.Services
             // Arrange
             var transactionDate = new DateTime(2026, 1, 10);
 
-            _cache.TryGetValue(Arg.Any<object>(), out Arg.Any<object>()).Returns(false);
+            _cache.TryGetValue(Arg.Any<object>(), out _).Returns(false);
 
             _api.GetExchangeRatesAsync(
                     Arg.Any<DateTime>(),
@@ -119,8 +119,8 @@ namespace ExchangeRateService.Tests.Services
                                 {
                                     CountryCurrencyDescription = TreasuryCadCurrency,
                                     ExchangeRate = "1.25",
-                                    EffectiveDate = transactionDate.ToString("yyyy-MM-dd"),
-                                    RecordDate = transactionDate.ToString("yyyy-MM-dd"),
+                                    EffectiveDate = DateFormats.IsoDate(transactionDate),
+                                    RecordDate = DateFormats.IsoDate(transactionDate),
                                 },
                             ],
                         }
@@ -141,7 +141,7 @@ namespace ExchangeRateService.Tests.Services
         public async Task GetRateAsync_ShouldReturnFailure_WhenApiReturnsNull()
         {
             // Arrange
-            _cache.TryGetValue(Arg.Any<object>(), out Arg.Any<object>()).Returns(false);
+            _cache.TryGetValue(Arg.Any<object>(), out _).Returns(false);
 
             _api.GetExchangeRatesAsync(Arg.Any<DateTime>(), Arg.Any<DateTime>(), Arg.Any<string>())
                 .Returns(
@@ -164,7 +164,7 @@ namespace ExchangeRateService.Tests.Services
             // Arrange
             var transactionDate = new DateTime(2026, 1, 10);
 
-            _cache.TryGetValue(Arg.Any<object>(), out Arg.Any<object>()).Returns(false);
+            _cache.TryGetValue(Arg.Any<object>(), out _).Returns(false);
 
             _api.GetExchangeRatesAsync(
                     Arg.Any<DateTime>(),
@@ -200,6 +200,7 @@ namespace ExchangeRateService.Tests.Services
         public void Dispose()
         {
             _db.Dispose();
+            GC.SuppressFinalize(this);
         }
     }
 }

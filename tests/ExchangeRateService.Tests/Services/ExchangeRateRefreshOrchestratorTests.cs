@@ -1,6 +1,6 @@
+using ExchangeRateService.Background;
 using ExchangeRateService.Background.Interfaces;
 using ExchangeRateService.Data;
-using ExchangeRateService.Services;
 using Microsoft.EntityFrameworkCore;
 using NSubstitute;
 
@@ -76,6 +76,7 @@ namespace ExchangeRateService.Tests.Services
         public void Dispose()
         {
             _db.Dispose();
+            GC.SuppressFinalize(this);
         }
     }
 }

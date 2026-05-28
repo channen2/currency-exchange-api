@@ -1,6 +1,7 @@
 using ExchangeRateService.Common;
 using ExchangeRateService.Common.Errors;
 using ExchangeRateService.DTOs.Responses;
+using ExchangeRateService.Integrations.Treasury;
 using ExchangeRateService.Services.Interfaces;
 
 namespace ExchangeRateService.Services

@@ -21,3 +21,12 @@ dotnet_diagnostic.CS8602.severity = warning
 dotnet_diagnostic.IDE0005.severity = warning
 dotnet_diagnostic.CS8019.severity = warning
 dotnet_diagnostic.IDE0051.severity = warning
+
+# If statement
+dotnet_diagnostic.IDE0046.severity = none
+
+[**/Migrations/*.cs]
+
+generated_code = true
+dotnet_diagnostic.CS8019.severity = none
+# dotnet_diagnostic.IDE300.severity = none

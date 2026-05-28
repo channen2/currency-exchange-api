@@ -2,7 +2,7 @@ using System.Net;
 using System.Text;
 using ExchangeRateService.Common.Errors;
 using ExchangeRateService.Services;
-using ExchangeRateService.Tests.Common.Http;
+using ExchangeRateService.Tests.Mocks;
 
 namespace ExchangeRateService.Tests.Services
 {

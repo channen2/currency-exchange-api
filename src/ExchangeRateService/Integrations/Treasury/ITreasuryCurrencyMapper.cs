@@ -1,4 +1,4 @@
-namespace ExchangeRateService.Services.Interfaces
+namespace ExchangeRateService.Integrations.Treasury
 {
     public interface ITreasuryCurrencyMapper
     {

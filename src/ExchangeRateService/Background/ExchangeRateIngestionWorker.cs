@@ -33,7 +33,7 @@ namespace ExchangeRateService.Background
                 }
                 catch (Exception ex)
                 {
-                    // swallow or log later (important: don't kill loop)
+                    LogMessages.IngestionWorkerFailed(_logger, DateTime.UtcNow, ex);
                 }
             }
         }

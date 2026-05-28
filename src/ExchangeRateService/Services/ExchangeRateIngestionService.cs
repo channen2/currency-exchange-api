@@ -1,5 +1,6 @@
 using ExchangeRateService.Common;
 using ExchangeRateService.Data;
+using ExchangeRateService.Integrations.Treasury;
 using ExchangeRateService.Logging;
 using ExchangeRateService.Models;
 using ExchangeRateService.Services.Interfaces;

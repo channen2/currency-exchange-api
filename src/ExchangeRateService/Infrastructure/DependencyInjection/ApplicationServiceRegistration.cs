@@ -1,3 +1,5 @@
+using ExchangeRateService.Background;
+using ExchangeRateService.Background.Interfaces;
 using ExchangeRateService.Services;
 using ExchangeRateService.Services.Interfaces;
 

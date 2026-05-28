@@ -1,3 +1,5 @@
+using ExchangeRateService.Integrations.Treasury;
+
 namespace ExchangeRateService.Common
 {
     public static class ExchangeRateCacheKey

@@ -16,14 +16,14 @@ namespace ExchangeRateService.Common
         {
             IsSuccess = true;
             Value = value;
-            Details = new Dictionary<string, object>();
+            Details = [];
         }
 
         private Result(ErrorDefinition error, Dictionary<string, object>? details = null)
         {
             IsSuccess = false;
             Error = error;
-            Details = details ?? new Dictionary<string, object>();
+            Details = details ?? [];
         }
 
         public static Result<T> Success(T value)

@@ -1,7 +1,8 @@
 using ExchangeRateService.Common;
 using ExchangeRateService.Common.Errors;
 using ExchangeRateService.Data;
-using ExchangeRateService.DTOs.Treasury;
+using ExchangeRateService.Integrations.Treasury;
+using ExchangeRateService.Integrations.Treasury.DTOs;
 using ExchangeRateService.Models;
 using ExchangeRateService.Services;
 using ExchangeRateService.Services.Interfaces;
@@ -216,6 +217,7 @@ namespace ExchangeRateService.Tests.Services
         public void Dispose()
         {
             _db.Dispose();
+            GC.SuppressFinalize(this);
         }
     }
 }

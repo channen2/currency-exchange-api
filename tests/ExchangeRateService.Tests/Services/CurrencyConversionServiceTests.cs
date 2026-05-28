@@ -1,5 +1,6 @@
 using ExchangeRateService.Common;
 using ExchangeRateService.Common.Errors;
+using ExchangeRateService.Integrations.Treasury;
 using ExchangeRateService.Models;
 using ExchangeRateService.Services;
 using ExchangeRateService.Services.Interfaces;

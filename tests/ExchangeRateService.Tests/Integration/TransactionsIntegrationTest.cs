@@ -112,7 +112,7 @@ namespace ExchangeRateService.Tests.Integration
             var created = await createResponse.Content.ReadFromJsonAsync<TransactionResponse>();
 
             // Act
-            var response = await _client.GetAsync($"/api/transactions/{created.Id}");
+            var response = await _client.GetAsync($"/api/transactions/{created!.Id}");
 
             response.EnsureSuccessStatusCode();
 

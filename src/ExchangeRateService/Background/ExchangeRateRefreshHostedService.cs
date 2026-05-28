@@ -1,5 +1,5 @@
+using ExchangeRateService.Background.Interfaces;
 using ExchangeRateService.Logging;
-using ExchangeRateService.Services.Interfaces;
 
 namespace ExchangeRateService.Background
 {

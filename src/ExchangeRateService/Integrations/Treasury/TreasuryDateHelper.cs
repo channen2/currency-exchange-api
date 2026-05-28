@@ -1,4 +1,4 @@
-namespace ExchangeRateService.Common
+namespace ExchangeRateService.Integrations.Treasury
 {
     public static class TreasuryDateHelper
     {
