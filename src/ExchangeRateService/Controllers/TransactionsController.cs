@@ -25,26 +25,43 @@ namespace ExchangeRateService.Controllers
         private readonly ICurrencyConversionService _conversionService = conversionService;
 
         /// <summary>
-        /// Retrieves all stored purchase transactions.
+        /// Retrieves purchase transactions ordered by transaction date (newest first).
         /// </summary>
-        /// <returns>
-        /// A list of transaction records.
-        /// </returns>
+        /// <param name="pagination">Page (1-based) and page size (max 100).</param>
+        /// <returns>A list of transaction records.</returns>
         [HttpGet]
-        [ProducesResponseType(typeof(IEnumerable<TransactionResponse>), StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<TransactionResponse>>> GetAll()
+        [ProducesResponseType(typeof(PagedResponse<TransactionResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<PagedResponse<TransactionResponse>>> GetAll(
+            [FromQuery] PaginationQuery pagination
+        )
         {
-            List<PurchaseTransaction> transactions = await _transactionService.GetAllAsync();
-
-            IEnumerable<TransactionResponse> response = transactions.Select(
-                x => new TransactionResponse
-                {
-                    Id = x.Id,
-                    Description = x.Description,
-                    PurchaseAmountUsd = x.PurchaseAmountUsd,
-                    TransactionDate = x.TransactionDate,
-                }
+            PagedResult<PurchaseTransaction> page = await _transactionService.GetPageAsync(
+                pagination.Page,
+                pagination.PageSize
             );
+
+            var totalPages =
+                page.TotalCount == 0
+                    ? 0
+                    : (int)Math.Ceiling(page.TotalCount / (double)pagination.PageSize);
+
+            PagedResponse<TransactionResponse> response = new()
+            {
+                Page = pagination.Page,
+                PageSize = pagination.PageSize,
+                TotalCount = page.TotalCount,
+                TotalPages = totalPages,
+                Items = page
+                    .Items.Select(x => new TransactionResponse
+                    {
+                        Id = x.Id,
+                        Description = x.Description,
+                        PurchaseAmountUsd = x.PurchaseAmountUsd,
+                        TransactionDate = x.TransactionDate,
+                    })
+                    .ToList(),
+            };
 
             return Ok(response);
         }

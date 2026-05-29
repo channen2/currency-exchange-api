@@ -72,7 +72,7 @@ namespace ExchangeRateService.Tests.Services
         }
 
         [Fact]
-        public async Task GetAll_ShouldReturnDescendingByTransactionDate()
+        public async Task GetPageAsync_ShouldReturnDescendingByTransactionDate()
         {
             // Arrange
             var db = CreateDbContext();
@@ -97,11 +97,42 @@ namespace ExchangeRateService.Tests.Services
             var sut = CreateSut(db);
 
             // Act
-            var result = await sut.GetAllAsync();
+            var result = await sut.GetPageAsync(1, 20);
 
             // Assert
-            Assert.Equal(newer.Id, result[0].Id);
-            Assert.Equal(older.Id, result[1].Id);
+            Assert.Equal(2, result.TotalCount);
+            Assert.Equal(newer.Id, result.Items[0].Id);
+            Assert.Equal(older.Id, result.Items[1].Id);
+        }
+
+        [Fact]
+        public async Task GetPageAsync_ShouldReturnRequestedPage()
+        {
+            // Arrange
+            var db = CreateDbContext();
+
+            for (var i = 0; i < 5; i++)
+            {
+                db.PurchaseTransactions.Add(
+                    new PurchaseTransaction
+                    {
+                        Id = Guid.NewGuid(),
+                        TransactionDate = new DateTime(2026, 1, 1).AddDays(-i),
+                        PurchaseAmountUsd = i,
+                    }
+                );
+            }
+
+            await db.SaveChangesAsync();
+
+            var sut = CreateSut(db);
+
+            // Act
+            var result = await sut.GetPageAsync(2, 2);
+
+            // Assert
+            Assert.Equal(5, result.TotalCount);
+            Assert.Equal(2, result.Items.Count);
         }
     }
 }

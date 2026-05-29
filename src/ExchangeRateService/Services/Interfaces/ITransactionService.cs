@@ -1,3 +1,4 @@
+using ExchangeRateService.Common;
 using ExchangeRateService.Models;
 
 namespace ExchangeRateService.Services.Interfaces
@@ -9,7 +10,9 @@ namespace ExchangeRateService.Services.Interfaces
             DateTime transactionDate,
             string description
         );
-        Task<List<PurchaseTransaction>> GetAllAsync();
+
+        Task<PagedResult<PurchaseTransaction>> GetPageAsync(int page, int pageSize);
+
         Task<PurchaseTransaction?> GetByIdAsync(Guid id);
     }
 }

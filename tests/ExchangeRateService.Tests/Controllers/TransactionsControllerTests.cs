@@ -25,29 +25,31 @@ namespace ExchangeRateService.Tests.Controllers
         }
 
         [Fact]
-        public async Task GetAll_ShouldReturnOkWithTransactions()
+        public async Task GetAll_ShouldReturnOkWithPagedTransactions()
         {
             // Arrange
+            var transaction = new PurchaseTransaction
+            {
+                Id = Guid.NewGuid(),
+                Description = "Test",
+                PurchaseAmountUsd = 100,
+                TransactionDate = new DateTime(2026, 1, 1),
+            };
+
             _transactionService
-                .GetAllAsync()
-                .Returns([
-                    new()
-                    {
-                        Id = Guid.NewGuid(),
-                        Description = "Test",
-                        PurchaseAmountUsd = 100,
-                        TransactionDate = new DateTime(2026, 1, 1),
-                    },
-                ]);
+                .GetPageAsync(1, 20)
+                .Returns(new PagedResult<PurchaseTransaction>([transaction], 1));
 
             // Act
-            var result = await _controller.GetAll();
+            var result = await _controller.GetAll(new PaginationQuery { Page = 1, PageSize = 20 });
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
-            var value = Assert.IsAssignableFrom<IEnumerable<TransactionResponse>>(okResult.Value);
-            Assert.Single(value);
-            Assert.Equal("Test", value.First().Description);
+            var value = Assert.IsType<PagedResponse<TransactionResponse>>(okResult.Value);
+            Assert.Single(value.Items);
+            Assert.Equal("Test", value.Items[0].Description);
+            Assert.Equal(1, value.TotalCount);
+            Assert.Equal(1, value.TotalPages);
         }
 
         [Fact]

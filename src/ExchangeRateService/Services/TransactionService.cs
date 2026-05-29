@@ -1,3 +1,4 @@
+using ExchangeRateService.Common;
 using ExchangeRateService.Data;
 using ExchangeRateService.Models;
 using ExchangeRateService.Services.Interfaces;
@@ -30,11 +31,20 @@ namespace ExchangeRateService.Services
             return transaction;
         }
 
-        public async Task<List<PurchaseTransaction>> GetAllAsync()
+        public async Task<PagedResult<PurchaseTransaction>> GetPageAsync(int page, int pageSize)
         {
-            return await _db
-                .PurchaseTransactions.OrderByDescending(x => x.TransactionDate)
+            IQueryable<PurchaseTransaction> query = _db.PurchaseTransactions.OrderByDescending(x =>
+                x.TransactionDate
+            );
+
+            var totalCount = await query.CountAsync();
+
+            List<PurchaseTransaction> items = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
+
+            return new PagedResult<PurchaseTransaction>(items, totalCount);
         }
 
         public async Task<PurchaseTransaction?> GetByIdAsync(Guid id)
