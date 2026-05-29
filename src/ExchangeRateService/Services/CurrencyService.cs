@@ -13,7 +13,7 @@ namespace ExchangeRateService.Services
         {
             return _options
                 .CurrencyMappings.Select(x => new SupportedCurrencyResponse(x.Key, x.Value))
-                .OrderBy(x => x.Code)
+                .OrderBy(x => x.CurrencyCode)
                 .ToList();
         }
     }

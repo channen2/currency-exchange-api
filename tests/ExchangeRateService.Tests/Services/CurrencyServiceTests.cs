@@ -28,8 +28,8 @@ namespace ExchangeRateService.Tests.Services
 
             // Assert
             Assert.Equal(2, result.Count);
-            Assert.Contains(result, x => x.Code == "EUR");
-            Assert.Contains(result, x => x.Code == "GBP");
+            Assert.Contains(result, x => x.CurrencyCode == "EUR");
+            Assert.Contains(result, x => x.CurrencyCode == "GBP");
         }
 
         [Fact]
@@ -54,9 +54,9 @@ namespace ExchangeRateService.Tests.Services
             var result = service.GetSupportedCurrencies();
 
             // Assert
-            Assert.Equal("AUD", result[0].Code);
-            Assert.Equal("EUR", result[1].Code);
-            Assert.Equal("USD", result[2].Code);
+            Assert.Equal("AUD", result[0].CurrencyCode);
+            Assert.Equal("EUR", result[1].CurrencyCode);
+            Assert.Equal("USD", result[2].CurrencyCode);
         }
 
         [Fact]

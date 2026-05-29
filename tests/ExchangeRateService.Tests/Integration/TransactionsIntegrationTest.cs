@@ -145,7 +145,7 @@ namespace ExchangeRateService.Tests.Integration
             Assert.NotNull(currencies);
             Assert.NotEmpty(currencies);
 
-            return currencies[0].Code;
+            return currencies[0].CurrencyCode;
         }
     }
 }
