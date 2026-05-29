@@ -2,7 +2,7 @@ namespace ExchangeRateService.Background.Interfaces
 {
     public interface IExchangeRateRefreshOrchestrator
     {
-        Task EnsureBootstrapAsync();
+        Task<bool> EnsureBootstrapAsync();
 
         Task RefreshRecentAsync();
     }

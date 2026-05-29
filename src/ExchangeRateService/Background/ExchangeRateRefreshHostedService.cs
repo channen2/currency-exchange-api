@@ -19,15 +19,26 @@ namespace ExchangeRateService.Background
             var orchestrator =
                 scope.ServiceProvider.GetRequiredService<IExchangeRateRefreshOrchestrator>();
 
-            await orchestrator.EnsureBootstrapAsync();
+            var bootstrapped = await orchestrator.EnsureBootstrapAsync();
 
+            if (bootstrapped)
+            {
+                // Data is fresh from bootstrap, no need to refresh today
+                var tomorrow = DateTime.UtcNow.Date.AddDays(1);
+                var delay = tomorrow - DateTime.UtcNow;
+                await Task.Delay(delay, stoppingToken);
+            }
+
+            // Run immediately on first non-bootstrap start, then every 24h
             while (!stoppingToken.IsCancellationRequested)
             {
                 await orchestrator.RefreshRecentAsync();
 
                 LogMessages.RefreshJobExecuted(_logger, DateTime.UtcNow);
 
-                await Task.Delay(TimeSpan.FromDays(1), stoppingToken);
+                var nextRun = DateTime.UtcNow.Date.AddDays(1);
+                var delay = nextRun - DateTime.UtcNow;
+                await Task.Delay(delay, stoppingToken);
             }
         }
     }

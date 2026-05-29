@@ -16,16 +16,17 @@ namespace ExchangeRateService.Background
 
         private const int BootstrapYears = 5;
 
-        public async Task EnsureBootstrapAsync()
+        public async Task<bool> EnsureBootstrapAsync()
         {
             var hasAnyRates = await _db.ExchangeRates.AnyAsync();
 
             if (hasAnyRates)
             {
-                return;
+                return false;
             }
 
             await BootstrapHistoricalAsync();
+            return true;
         }
 
         public async Task RefreshRecentAsync()
