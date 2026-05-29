@@ -29,4 +29,3 @@ dotnet_diagnostic.IDE0046.severity = none
 
 generated_code = true
 dotnet_diagnostic.CS8019.severity = none
-# dotnet_diagnostic.IDE300.severity = none

@@ -124,7 +124,6 @@ namespace ExchangeRateService.Services
                 }
             }
 
-            Console.WriteLine("WOOHOOO, got this many things-, {0}", allRecords.Count);
             return Result<TreasuryExchangeRateApiResponse>.Success(
                 new TreasuryExchangeRateApiResponse { Data = allRecords }
             );
