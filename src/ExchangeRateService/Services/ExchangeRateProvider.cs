@@ -17,6 +17,7 @@ namespace ExchangeRateService.Services
         ITreasuryExchangeRateApiClient treasuryService,
         IExchangeRateIngestionBuffer ingestionBuffer,
         IMemoryCache cache,
+        ITreasuryCurrencyMapper treasuryCurrencyMapper,
         ILogger<ExchangeRateProvider> logger
     ) : IExchangeRateProvider
     {
@@ -25,6 +26,8 @@ namespace ExchangeRateService.Services
         private readonly IExchangeRateIngestionBuffer _ingestionBuffer = ingestionBuffer;
 
         private readonly IMemoryCache _cache = cache;
+
+        private readonly ITreasuryCurrencyMapper _treasuryCurrencyMapper = treasuryCurrencyMapper;
         private readonly ILogger<ExchangeRateProvider> _logger = logger;
 
         public async Task<Result<decimal>> GetRateAsync(
@@ -80,6 +83,8 @@ namespace ExchangeRateService.Services
 
             LogMessages.TreasuryApiFallback(_logger, treasuryCurrency, transactionDate, cutoffDate);
 
+            var currencyCode = treasuryCurrencyMapper.ToInternal(treasuryCurrency);
+
             if (exchangeRateFromApi is null)
             {
                 LogMessages.TreasuryApiFailure(
@@ -93,7 +98,7 @@ namespace ExchangeRateService.Services
                     ErrorRegistry.ExchangeRateNotFound,
                     new Dictionary<string, object>
                     {
-                        ["currency"] = treasuryCurrency,
+                        ["currency"] = currencyCode,
                         ["transactionDate"] = DateFormats.IsoDate(transactionDate),
                     }
                 );
@@ -111,6 +116,8 @@ namespace ExchangeRateService.Services
                     ErrorRegistry.ExchangeRateParseError,
                     new Dictionary<string, object>
                     {
+                        ["currency"] = currencyCode,
+                        ["transactionDate"] = DateFormats.IsoDate(transactionDate),
                         ["exchangeRateValue"] = exchangeRateFromApi.ExchangeRate,
                     }
                 );

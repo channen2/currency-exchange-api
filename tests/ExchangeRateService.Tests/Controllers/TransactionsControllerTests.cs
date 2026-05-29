@@ -44,7 +44,7 @@ namespace ExchangeRateService.Tests.Controllers
             var result = await _controller.GetAll();
 
             // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
+            var okResult = Assert.IsType<OkObjectResult>(result.Result);
             var value = Assert.IsAssignableFrom<IEnumerable<TransactionResponse>>(okResult.Value);
             Assert.Single(value);
             Assert.Equal("Test", value.First().Description);
@@ -72,8 +72,8 @@ namespace ExchangeRateService.Tests.Controllers
             var result = await _controller.GetById(id);
 
             // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var value = Assert.IsType<TransactionResponse>(okResult.Value);
+            var ok = Assert.IsType<OkObjectResult>(result.Result);
+            var value = Assert.IsType<TransactionResponse>(ok.Value);
 
             Assert.Equal(id, value.Id);
         }
@@ -90,7 +90,7 @@ namespace ExchangeRateService.Tests.Controllers
             var result = await _controller.GetById(id);
 
             // Assert
-            Assert.IsType<NotFoundResult>(result);
+            Assert.IsType<NotFoundResult>(result.Result);
         }
 
         [Fact]
@@ -124,8 +124,8 @@ namespace ExchangeRateService.Tests.Controllers
             var result = await _controller.Create(request);
 
             // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var value = Assert.IsType<TransactionResponse>(okResult.Value);
+            var created = Assert.IsType<CreatedAtActionResult>(result);
+            var value = Assert.IsType<TransactionResponse>(created.Value);
 
             Assert.Equal(transaction.Id, value.Id);
             Assert.Equal(request.Description, value.Description);

@@ -1,15 +1,19 @@
+using System.ComponentModel.DataAnnotations;
 using ExchangeRateService.Common;
 using ExchangeRateService.Common.Errors;
 using ExchangeRateService.DTOs.Requests;
 using ExchangeRateService.DTOs.Responses;
 using ExchangeRateService.Models;
 using ExchangeRateService.Services.Interfaces;
+using ExchangeRateService.Swagger.Examples;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Filters;
 
 namespace ExchangeRateService.Controllers
 {
     [ApiController]
-    [Route("api/transactions")]
+    [Route("api/v1/transactions")]
+    [Tags("Transactions")]
     public class TransactionsController(
         ITransactionService transactionService,
         ICurrencyConversionService conversionService
@@ -18,8 +22,15 @@ namespace ExchangeRateService.Controllers
         private readonly ITransactionService _transactionService = transactionService;
         private readonly ICurrencyConversionService _conversionService = conversionService;
 
+        /// <summary>
+        /// Retrieves all stored purchase transactions.
+        /// </summary>
+        /// <returns>
+        /// A list of transaction records.
+        /// </returns>
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        [ProducesResponseType(typeof(IEnumerable<TransactionResponse>), StatusCodes.Status200OK)]
+        public async Task<ActionResult<IEnumerable<TransactionResponse>>> GetAll()
         {
             List<PurchaseTransaction> transactions = await _transactionService.GetAllAsync();
 
@@ -36,8 +47,15 @@ namespace ExchangeRateService.Controllers
             return Ok(response);
         }
 
+        /// <summary>
+        /// Retrieves a specific transaction by its unique identifier.
+        /// </summary>
+        /// <param name="id">The transaction ID.</param>
+        /// <returns>The requested transaction if found.</returns>
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(Guid id)
+        [ProducesResponseType(typeof(TransactionResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<TransactionResponse>> GetById(Guid id)
         {
             PurchaseTransaction? transaction = await _transactionService.GetByIdAsync(id);
 
@@ -57,8 +75,17 @@ namespace ExchangeRateService.Controllers
             return Ok(response);
         }
 
+        /// <summary>
+        /// Creates a new purchase transaction in USD.
+        /// </summary>
+        /// <param name="request">The transaction creation payload.</param>
+        /// <returns>The created transaction.</returns>
         [HttpPost]
-        public async Task<IActionResult> Create(CreateTransactionRequest request)
+        [SwaggerRequestExample(typeof(CreateTransactionRequest), typeof(CreateTransactionExample))]
+        [ProducesResponseType(typeof(TransactionResponse), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> Create([FromBody] CreateTransactionRequest request)
         {
             PurchaseTransaction transaction = await _transactionService.CreateAsync(
                 request.PurchaseAmountUsd,
@@ -74,15 +101,27 @@ namespace ExchangeRateService.Controllers
                 TransactionDate = transaction.TransactionDate,
             };
 
-            return Ok(response);
+            return CreatedAtAction(nameof(GetById), new { id = transaction.Id }, response);
         }
 
+        /// <summary>
+        /// Converts a stored transaction from USD into the requested currency
+        /// using the most recent exchange rate available within 6 months of the transaction date.
+        /// </summary>
+        /// <param name="id">Transaction identifier.</param>
+        /// <param name="currencyCode">Target ISO currency code (e.g. CAD, EUR).</param>
+        /// <returns>The converted transaction with exchange rate and converted amount.</returns>
         [HttpGet("{id}/convert")]
-        public async Task<IActionResult> Convert(Guid id, [FromQuery] string currency)
+        [ProducesResponseType(typeof(ConvertedTransactionResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status502BadGateway)]
+        public async Task<IActionResult> Convert(Guid id, [FromQuery, Required] string currencyCode)
         {
             Result<ConvertedTransactionResponse> result = await _conversionService.ConvertAsync(
                 id,
-                currency
+                currencyCode
             );
 
             if (!result.IsSuccess)

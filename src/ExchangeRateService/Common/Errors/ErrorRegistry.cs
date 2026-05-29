@@ -16,8 +16,8 @@ namespace ExchangeRateService.Common.Errors
 
         public static readonly ErrorDefinition ExchangeRateNotFound = new(
             "EXCHANGE_RATE_NOT_FOUND",
-            422,
-            "No exchange rate found within 6 months of transaction date"
+            404,
+            "No exchange rate found within 6 months on or before the transaction date"
         );
 
         public static readonly ErrorDefinition ExternalServiceError = new(

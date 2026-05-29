@@ -2,6 +2,7 @@ using ExchangeRateService.Background.Interfaces;
 using ExchangeRateService.Common;
 using ExchangeRateService.Common.Errors;
 using ExchangeRateService.Data;
+using ExchangeRateService.Integrations.Treasury;
 using ExchangeRateService.Integrations.Treasury.DTOs;
 using ExchangeRateService.Models;
 using ExchangeRateService.Services;
@@ -21,6 +22,7 @@ namespace ExchangeRateService.Tests.Services
         private readonly ITreasuryExchangeRateApiClient _api;
         private readonly IExchangeRateIngestionBuffer _buffer;
         private readonly IMemoryCache _cache;
+        private readonly ITreasuryCurrencyMapper _mapper;
         private readonly ILogger<ExchangeRateProvider> _logger;
 
         private readonly ExchangeRateProvider _sut;
@@ -36,9 +38,10 @@ namespace ExchangeRateService.Tests.Services
             _api = Substitute.For<ITreasuryExchangeRateApiClient>();
             _buffer = Substitute.For<IExchangeRateIngestionBuffer>();
             _cache = Substitute.For<IMemoryCache>();
+            _mapper = Substitute.For<ITreasuryCurrencyMapper>();
             _logger = Substitute.For<ILogger<ExchangeRateProvider>>();
 
-            _sut = new ExchangeRateProvider(_db, _api, _buffer, _cache, _logger);
+            _sut = new ExchangeRateProvider(_db, _api, _buffer, _cache, _mapper, _logger);
         }
 
         [Fact]

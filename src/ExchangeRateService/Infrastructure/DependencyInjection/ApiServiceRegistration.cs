@@ -1,5 +1,6 @@
 using ExchangeRateService.DTOs.Responses;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Filters;
 
 namespace ExchangeRateService.Infrastructure.DependencyInjection
 {
@@ -32,7 +33,27 @@ namespace ExchangeRateService.Infrastructure.DependencyInjection
                 });
 
             services.AddEndpointsApiExplorer();
-            services.AddSwaggerGen();
+
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc(
+                    "v1",
+                    new()
+                    {
+                        Title = "Exchange Rate Service",
+                        Version = "v1",
+                        Description =
+                            "Service for currency conversion using Treasury API exchange rates",
+                    }
+                );
+                var xmlFile = $"{typeof(Program).Assembly.GetName().Name}.xml";
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+
+                c.IncludeXmlComments(xmlPath);
+                c.ExampleFilters();
+            });
+
+            services.AddSwaggerExamplesFromAssemblyOf<Program>();
 
             return services;
         }

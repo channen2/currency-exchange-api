@@ -24,7 +24,10 @@ namespace ExchangeRateService.Tests.Integration
             };
 
             // Create Transaction
-            var createResponse = await _client.PostAsJsonAsync("/api/transactions", createRequest);
+            var createResponse = await _client.PostAsJsonAsync(
+                "/api/v1/transactions",
+                createRequest
+            );
 
             createResponse.EnsureSuccessStatusCode();
 
@@ -34,7 +37,7 @@ namespace ExchangeRateService.Tests.Integration
 
             // Convert Transaction
             var convertResponse = await _client.GetAsync(
-                $"/api/transactions/{created.Id}/convert?currency={currencyCode}"
+                $"/api/v1/transactions/{created.Id}/convert?currencyCode={currencyCode}"
             );
 
             convertResponse.EnsureSuccessStatusCode();
@@ -59,7 +62,7 @@ namespace ExchangeRateService.Tests.Integration
 
             // Act
             var response = await _client.GetAsync(
-                $"/api/transactions/{transactionId}/convert?currency={currencyCode}"
+                $"/api/v1/transactions/{transactionId}/convert?currencyCode={currencyCode}"
             );
 
             var content = await response.Content.ReadAsStringAsync();
@@ -75,7 +78,7 @@ namespace ExchangeRateService.Tests.Integration
         {
             // Arrange
             var createResponse = await _client.PostAsJsonAsync(
-                "/api/transactions",
+                "/api/v1/transactions",
                 new
                 {
                     description = "Laptop",
@@ -89,7 +92,7 @@ namespace ExchangeRateService.Tests.Integration
 
             // Act
             var response = await _client.GetAsync(
-                $"/api/transactions/{created!.Id}/convert?currency={invalidCurrency}"
+                $"/api/v1/transactions/{created!.Id}/convert?currencyCode={invalidCurrency}"
             );
 
             var content = await response.Content.ReadAsStringAsync();
@@ -105,7 +108,7 @@ namespace ExchangeRateService.Tests.Integration
         {
             // Arrange
             var createResponse = await _client.PostAsJsonAsync(
-                "/api/transactions",
+                "/api/v1/transactions",
                 new
                 {
                     description = "Laptop",
@@ -117,7 +120,7 @@ namespace ExchangeRateService.Tests.Integration
             var created = await createResponse.Content.ReadFromJsonAsync<TransactionResponse>();
 
             // Act
-            var response = await _client.GetAsync($"/api/transactions/{created!.Id}");
+            var response = await _client.GetAsync($"/api/v1/transactions/{created!.Id}");
 
             response.EnsureSuccessStatusCode();
 
@@ -131,7 +134,7 @@ namespace ExchangeRateService.Tests.Integration
 
         private async Task<string> GetValidCurrencyCodeAsync()
         {
-            var response = await _client.GetAsync("/api/currencies/");
+            var response = await _client.GetAsync("/api/v1/currencies");
 
             response.EnsureSuccessStatusCode();
 
